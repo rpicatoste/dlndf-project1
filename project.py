@@ -1,4 +1,5 @@
 
+#%%
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -12,7 +13,7 @@ print(rides.head())
 rides[:24*10].plot(x='dteday', y='cnt')
 plt.show()
 
-# Convert categorical variables to dummy variables
+#%% Convert categorical variables to dummy variables
 dummy_fields = ['season', 'weathersit', 'mnth', 'hr', 'weekday']
 for each in dummy_fields:
     dummies = pd.get_dummies(rides[each], prefix=each, drop_first=False)
@@ -49,114 +50,22 @@ test_features, test_targets =   test_data.drop(target_fields, axis=1), \
 train_features, train_targets = features[:-60*24], targets[:-60*24]
 val_features, val_targets = features[-60*24:], targets[-60*24:]
 
-
-
-# We've built out the structure and the backwards pass. 
-# You'll implement the forward pass through the network. 
-# You'll also set the hyperparameters: the learning rate, the number of hidden units, and the number of training passes.
-# The network has two layers, a hidden layer and an output layer. 
-# The hidden layer will use the sigmoid function for activations. 
-# The output layer has only one node and is used for the regression, the output
-# of the node is the same as the input of the node. That is, the activation 
-# function is  f(x)=xf(x)=x . 
-
-#Below, you have these tasks:
-#Implement the sigmoid function to use as the activation function. 
-# Set self.activation_function in __init__ to your sigmoid function.
-#Implement the forward pass in the train method.
-#Implement the backpropagation algorithm in the train method, including calculating the output error.
-#Implement the forward pass in the run method
-class NeuralNetwork(object):
-    def __init__(self, input_nodes, hidden_nodes, output_nodes, learning_rate):
-        # Set number of nodes in input, hidden and output layers.
-        self.input_nodes = input_nodes
-        self.hidden_nodes = hidden_nodes
-        self.output_nodes = output_nodes
-
-        # Initialize weights
-        self.weights_input_to_hidden = np.random.normal(0.0, self.hidden_nodes**-0.5, 
-                                       (self.hidden_nodes, self.input_nodes))
-
-        self.weights_hidden_to_output = np.random.normal(0.0, self.output_nodes**-0.5, 
-                                       (self.output_nodes, self.hidden_nodes))
-        self.lr = learning_rate
-        
-        #### TODO: Set self.activation_function to your implemented sigmoid function ####
-        #
-        # Note: in Python, you can define a function with a lambda expression,
-        # as shown below.
-        self.activation_function = lambda x : 1 / (1 + np.exp(-x))  # Replace 0 with your sigmoid calculation.
-        
-        ### If the lambda code above is not something you're familiar with,
-        # You can uncomment out the following three lines and put your 
-        # implementation there instead.
-        #
-        #def sigmoid(x):
-        #    return 0  # Replace 0 with your sigmoid calculation here
-        #self.activation_function = sigmoid
-                    
-    
-    def train(self, inputs_list, targets_list):
-        # Convert inputs list to 2d array
-        inputs = np.array(inputs_list, ndmin=2).T
-        targets = np.array(targets_list, ndmin=2).T
-        
-        #### Implement the forward pass here ####
-        ### Forward pass ###
-        # TODO: Hidden layer - Replace these values with your calculations.
-        hidden_inputs = np.dot(inputs.T, self.weights_input_to_hidden.T) # signals into hidden layer
-        hidden_outputs = self.activation_function( hidden_inputs ).T # signals from hidden layer
-        
-        # TODO: Output layer - Replace these values with your calculations.
-        final_inputs = np.dot(hidden_outputs.T, self.weights_hidden_to_output.T) # signals into final output layer
-        final_outputs = final_inputs # signals from final output layer
-        
-        #### Implement the backward pass here ####
-        ### Backward pass ###
-        
-        # TODO: Output error - Replace this value with your calculations.
-        # Output layer error is the difference between desired target and 
-        # actual output.
-        output_errors = targets - final_outputs
-        
-        # TODO: Backpropagated error - Replace these values with your calculations.
-        hidden_errors = weights_hidden_output * output_error_term * 1
-                    # errors propagated to the hidden layer
-        hidden_grad = None # hidden layer gradients
-        
-        # TODO: Update the weights - Replace these values with your calculations.
-        self.weights_hidden_to_output += 0 # update hidden-to-output weights with gradient descent step
-        self.weights_input_to_hidden += 0 # update input-to-hidden weights with gradient descent step
- 
-        
-    def run(self, inputs_list):
-        # Run a forward pass through the network
-        inputs = np.array(inputs_list, ndmin=2).T
-        
-        #### Implement the forward pass here ####
-        # TODO: Hidden layer - replace these values with the appropriate calculations.
-        hidden_inputs = None # signals into hidden layer
-        hidden_outputs = None # signals from hidden layer
-        
-        # TODO: Output layer - Replace these values with the appropriate calculations.
-        final_inputs = None # signals into final output layer
-        final_outputs = np.zeros((1, len(inputs_list))) # signals from final output layer 
-        
-        return final_outputs
-    
-def MSE(y, Y):
-    return np.mean((y-Y)**2)
-
-
+# %%
 import sys
+from neural_network import *
 
 ### Set the hyperparameters here ###
-epochs = 100
+epochs = 1000
 learning_rate = 0.1
 hidden_nodes = 2
 output_nodes = 1
 
 N_i = train_features.shape[1]
+print(N_i)
+print(train_features.shape)
+print(train_features.head())
+
+#%%
 network = NeuralNetwork(N_i, hidden_nodes, output_nodes, learning_rate)
 
 losses = {'train':[], 'validation':[]}
@@ -168,8 +77,8 @@ for e in range(epochs):
         network.train(record, target)
     
     # Printing out the training progress
-    train_loss = MSE(network.run(train_features), train_targets['cnt'].values)
-    val_loss = MSE(network.run(val_features), val_targets['cnt'].values)
+    train_loss = MSE(network.run(train_features)[0], train_targets['cnt'].values)
+    val_loss = MSE(network.run(val_features)[0], val_targets['cnt'].values)
     sys.stdout.write("\rProgress: " + str(100 * e/float(epochs))[:4] \
                      + "% ... Training loss: " + str(train_loss)[:5] \
                      + " ... Validation loss: " + str(val_loss)[:5])
@@ -177,7 +86,9 @@ for e in range(epochs):
     losses['train'].append(train_loss)
     losses['validation'].append(val_loss)    
     
-    
+
+#%% Plot trained network
+
 plt.plot(losses['train'], label='Training loss')
 plt.show()
 plt.plot(losses['validation'], label='Validation loss')
@@ -190,8 +101,8 @@ plt.show()
 fig, ax = plt.subplots(figsize=(8,4))
 
 mean, std = scaled_features['cnt']
-predictions = network.run(test_features)*std + mean
-ax.plot(predictions[0], label='Prediction')
+predictions = network.run(test_features)[0].T * std + mean
+ax.plot(predictions, label='Prediction')
 ax.plot((test_targets['cnt']*std + mean).values, label='Data')
 ax.set_xlim(right=len(predictions))
 ax.legend()
@@ -205,7 +116,7 @@ _ = ax.set_xticklabels(dates[12::24], rotation=45)
 
 
 
-# Unit tests
+#%% Unit tests
 import unittest
 
 inputs = [0.5, -0.2, 0.1]
@@ -256,7 +167,7 @@ class TestMethods(unittest.TestCase):
         network.weights_input_to_hidden = test_w_i_h.copy()
         network.weights_hidden_to_output = test_w_h_o.copy()
 
-        self.assertTrue(np.allclose(network.run(inputs), 0.09998924))
+        self.assertTrue(np.allclose(network.run(inputs)[0], 0.09998924))
 
-#suite = unittest.TestLoader().loadTestsFromModule(TestMethods())
-#unittest.TextTestRunner().run(suite)
+suite = unittest.TestLoader().loadTestsFromModule(TestMethods())
+unittest.TextTestRunner().run(suite)
