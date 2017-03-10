@@ -37,16 +37,15 @@ class NeuralNetwork(object):
         self.weights_h_o = \
                     np.random.normal( 0.0, self.output_nodes**-0.5, 
                                       (self.output_nodes, self.hidden_nodes))
+        
         self.lr = learning_rate
         
-        # Sigmoid function ####
         self.activation_function = lambda x : 1 / (1 + np.exp(-x))  
                     
     
     def train(self, inputs_list, targets_list):
         # Convert inputs list to 2d array
-        # inputs_list size: 56 
-        # inputs size: 56x1 
+        # inputs_list size: 56, inputs size: 56x1 
         inputs = np.array(inputs_list, ndmin=2).T
         # targets size: 1x1 
         targets = np.array(targets_list, ndmin=2).T
@@ -69,7 +68,6 @@ class NeuralNetwork(object):
         hidden_error_term = hidden_errors * hidden_outputs * (1-hidden_outputs)
         hidden_grad = np.dot(hidden_error_term, inputs.T)
         
-        # TODO: Update the weights - Replace these values with your calculations.
         # update hidden-to-output weights with gradient descent step
         self.weights_h_o += self.lr * output_grad
         # update input-to-hidden weights with gradient descent step
@@ -78,23 +76,23 @@ class NeuralNetwork(object):
         
     def run(self, inputs_list):
         # Run a forward pass through the network
-        # inputs_list size: 56 
-        # inputs size: 56x1 
+        # inputs_list size: 56, inputs size: 56x1 
         inputs = np.array(inputs_list, ndmin=2).T
-        print("inputs " + str(inputs))
+#        print("inputs " + str(inputs))
+#        print("test_w_i_h " + str(self.weights_i_h))
         
         #### Implement the forward pass here ####
         hidden_inputs = np.dot(self.weights_i_h, inputs) 
-        print("hidden_inputs " + str(hidden_inputs))
+#        print("hidden_inputs " + str(hidden_inputs))
         hidden_outputs = self.activation_function( hidden_inputs ) 
-        print("hidden_outputs " + str(hidden_outputs))
+#        print("hidden_outputs " + str(hidden_outputs))
         
         # signals into final output layer
         final_inputs = np.dot(self.weights_h_o, hidden_outputs)
-        print("final_inputs " + str(final_inputs))
+#        print("final_inputs " + str(final_inputs))
         # signals from final output layer with f(x) = x
         final_outputs = final_inputs 
-        print("final_outputs " + str(final_outputs), "\n")
+#        print("final_outputs " + str(final_outputs), "\n")
         
         return final_outputs, final_inputs, hidden_outputs, hidden_inputs
     

@@ -55,9 +55,9 @@ import sys
 from neural_network import *
 
 ### Set the hyperparameters here ###
-epochs = 1000
-learning_rate = 0.1
-hidden_nodes = 2
+epochs = 3000
+learning_rate = 0.01
+hidden_nodes = 22
 output_nodes = 1
 
 N_i = train_features.shape[1]
@@ -75,6 +75,7 @@ for e in range(epochs):
     for record, target in zip(train_features.ix[batch].values, 
                               train_targets.ix[batch]['cnt']):
         network.train(record, target)
+        break
     
     # Printing out the training progress
     train_loss = MSE(network.run(train_features)[0], train_targets['cnt'].values)
@@ -90,6 +91,7 @@ for e in range(epochs):
 #%% Plot trained network
 
 plt.plot(losses['train'], label='Training loss')
+plt.legend()
 plt.show()
 plt.plot(losses['validation'], label='Validation loss')
 plt.legend()
@@ -97,13 +99,14 @@ plt.ylim(ymax=0.5)
 plt.show()
 
 
-# Check out your predictions
+#%% Check out your predictions
 fig, ax = plt.subplots(figsize=(8,4))
 
 mean, std = scaled_features['cnt']
 predictions = network.run(test_features)[0].T * std + mean
 ax.plot(predictions, label='Prediction')
 ax.plot((test_targets['cnt']*std + mean).values, label='Data')
+ax.plot(test_features['holiday'].values, label='Holiday')
 ax.set_xlim(right=len(predictions))
 ax.legend()
 
@@ -151,21 +154,21 @@ class TestMethods(unittest.TestCase):
     def test_train(self):
         # Test that weights are updated correctly on training
         network = NeuralNetwork(3, 2, 1, 0.5)
-        network.weights_input_to_hidden = test_w_i_h.copy()
-        network.weights_hidden_to_output = test_w_h_o.copy()
+        network.weights_i_h = test_w_i_h.copy()
+        network.weights_h_o = test_w_h_o.copy()
         
         network.train(inputs, targets)
-        self.assertTrue(np.allclose(network.weights_hidden_to_output, 
+        self.assertTrue(np.allclose(network.weights_h_o, 
                                     np.array([[ 0.37275328, -0.03172939]])))
-        self.assertTrue(np.allclose(network.weights_input_to_hidden,
+        self.assertTrue(np.allclose(network.weights_i_h,
                                     np.array([[ 0.10562014,  0.39775194, -0.29887597],
                                               [-0.20185996,  0.50074398,  0.19962801]])))
 
     def test_run(self):
         # Test correctness of run method
         network = NeuralNetwork(3, 2, 1, 0.5)
-        network.weights_input_to_hidden = test_w_i_h.copy()
-        network.weights_hidden_to_output = test_w_h_o.copy()
+        network.weights_i_h = test_w_i_h.copy()
+        network.weights_h_o = test_w_h_o.copy()
 
         self.assertTrue(np.allclose(network.run(inputs)[0], 0.09998924))
 
